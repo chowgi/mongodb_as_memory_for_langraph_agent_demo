@@ -1,0 +1,176 @@
+Metadata-Version: 2.4
+Name: langgraph-agent-demo
+Version: 0.1.0
+Summary: LangGraph + MongoDB toolbox agent demo
+Author: Ben Karciauskas
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pymongo>=4.7.0
+Requires-Dist: langchain>=0.2.14
+Requires-Dist: langchain-openai>=0.1.22
+Requires-Dist: langgraph>=0.2.24
+Requires-Dist: langgraph-checkpoint-mongodb<0.3.0,>=0.1.0
+Requires-Dist: voyageai>=0.2.0
+Requires-Dist: python-dotenv>=1.0.1
+Requires-Dist: PyPDF2>=3.0.1
+Requires-Dist: pytz>=2024.1
+Requires-Dist: requests>=2.32.3
+Requires-Dist: typing-extensions>=4.12.2
+
+# MongoDB LangGraph Agent Setup
+
+This directory contains setup scripts for the MongoDB LangGraph Agent system. These scripts allow you to set up different components of the system individually or all at once.
+
+## Prerequisites
+
+Before running the setup scripts, make sure you have:
+
+1. **Environment Variables Set:**
+   ```bash
+   export MONGODB_URI="your_mongodb_connection_string"
+   export OPENAI_API_KEY="your_openai_api_key"
+   export VOYAGE_API_KEY="your_voyage_api_key"  # Optional
+   ```
+
+2. **Python Dependencies Installed:**
+   ```bash
+   uv sync  # or pip install -r requirements.txt
+   ```
+
+## Setup Script
+
+### Command-Line Setup Script (`setup_agent_database.py`)
+
+This script allows you to run specific setup components via command-line arguments, making it suitable for automation and CI/CD pipelines.
+
+**Usage:**
+```bash
+uv run python setup_agent_database.py [OPTIONS]
+```
+
+**Available Options:**
+- `--full` - Run complete setup (all components)
+- `--check-connection` - Check MongoDB connection only
+- `--tools` - Setup tools only
+- `--indexes` - Setup vector indexes only
+- `--policies` - Setup policy documents only
+- `--dummy-data` - Setup dummy data only
+- `--status` - Show collection status only
+- `--test` - Test the agent only
+
+**Examples:**
+```bash
+# Run full setup
+uv run python setup_agent_database.py --full
+
+# Setup only tools and indexes
+uv run python setup_agent_database.py --tools --indexes
+
+# Check connection and show status
+uv run python setup_agent_database.py --check-connection --status
+
+# Test the agent
+uv run python setup_agent_database.py --test
+```
+
+## Setup Components
+
+### 1. Tools Setup
+- Installs predefined tools in the MongoDB `tools` collection
+- Tools include: order lookup, return policy, return creation, greetings, math operations, games, etc.
+- Each tool is stored with its function definition and metadata
+
+### 2. Vector Indexes Setup
+- Creates vector search indexes for all collections
+- Enables semantic search capabilities
+- Indexes are created for the `embedding` field in each collection
+- Uses cosine similarity for vector comparisons
+
+### 3. Policy Documents Setup
+- Downloads policy documents from S3
+- Documents include: privacy policy, return policy, shipping policy, terms of service, warranty policy
+- Processes and stores documents with embeddings in the `policies` collection
+
+### 4. Dummy Data Setup
+- Creates sample order data for testing
+- Includes 3 sample orders with different statuses and items
+- Stores data in the `orders` collection
+
+### 5. Agent Testing
+- Runs a test query through the agent system
+- Verifies that the agent can process queries and use tools
+- Uses the query: "How much did I pay for order 101"
+
+## Collection Structure
+
+The setup creates the following collections:
+
+- **`tools`** - Contains tool definitions and metadata
+- **`orders`** - Contains order data and customer information
+- **`returns`** - Contains return request data (created when needed)
+- **`policies`** - Contains policy documents with embeddings
+
+## Troubleshooting
+
+### Common Issues
+
+1. **MongoDB Connection Failed**
+   - Verify your `MONGODB_URI` is correct
+   - Ensure your MongoDB instance is running and accessible
+   - Check network connectivity and firewall settings
+
+2. **Missing Environment Variables**
+   - Ensure all required environment variables are set
+   - Use `echo $MONGODB_URI` to verify the variable is set
+
+3. **Vector Index Creation Failed**
+   - Ensure you're using MongoDB Atlas (vector search is not available in Community Edition)
+   - Verify your cluster has vector search enabled
+   - Check that you have sufficient permissions
+
+4. **Policy Document Download Failed**
+   - Check internet connectivity
+   - Verify the S3 URLs are accessible
+   - Ensure you have write permissions in the current directory
+
+### Error Messages
+
+- **"Collection does not exist yet"** - This is normal for the `returns` collection, which is created when the first return request is made
+- **"Tool already exists"** - This is normal if you've run the setup before
+- **"Vector search index already exists"** - This is normal if indexes were previously created
+
+## Automation
+
+The command-line script (`setup_mongodb_agent_cli.py`) is designed for automation:
+
+```bash
+# In a CI/CD pipeline
+uv run python setup_mongodb_agent_cli.py --full
+
+# Check exit code
+if [ $? -eq 0 ]; then
+    echo "Setup completed successfully"
+else
+    echo "Setup failed"
+    exit 1
+fi
+```
+
+## Next Steps
+
+After running the setup:
+
+1. **Test the Agent:**
+   ```bash
+   uv run python -c "import langgraph_mongodb_toolbox_agent_clean; langgraph_mongodb_toolbox_agent_clean.agent_builder.create_dynamic_agent('How much did I pay for order 101', 'test')"
+   ```
+
+2. **Run the Main Application:**
+   ```bash
+   uv run python langgraph_mongodb_toolbox_agent_clean.py
+   ```
+
+3. **Explore the Code:**
+   - Review `langgraph_mongodb_toolbox_agent_clean.py` for the main implementation
+   - Check the tool definitions and agent logic
+   - Experiment with different queries and scenarios

@@ -1,0 +1,35 @@
+[project]
+name = "langgraph-agent-demo"
+version = "0.1.0"
+description = "LangGraph + MongoDB toolbox agent demo"
+authors = [{ name = "Ben Karciauskas" }]
+readme = "SETUP_README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "pymongo>=4.7.0",
+  "langchain>=0.2.14",
+  "langchain-openai>=0.1.22",
+  "langgraph>=0.2.24",
+  "langgraph-checkpoint-mongodb>=0.1.0,<0.3.0",
+  "voyageai>=0.2.0",
+  "python-dotenv>=1.0.1",
+  "PyPDF2>=3.0.1",
+  "pytz>=2024.1",
+  "requests>=2.32.3",
+  "typing-extensions>=4.12.2",
+]
+
+[tool.uv]
+dev-dependencies = []
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = [
+  "langgraph_mongodb_toolbox_agent",
+  "reset_demo",
+  "setup_agent_database",
+]
+
