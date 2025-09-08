@@ -25,23 +25,17 @@ from contextlib import contextmanager
 import pytz
 
 # Get API keys from environment variables or Colab secrets
-try:
-    from google.colab import userdata
-    MONGODB_URI = userdata.get('MDB_DEMO_URI')
-    OPENAI_API_KEY = userdata.get('OPENAI_API_KEY')
-    VOYAGE_API_KEY = userdata.get('VOYAGE_API_KEY')
-except ImportError:
-    # For local testing, use environment variables
-    from dotenv import load_dotenv
-    load_dotenv()
-    
-    MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
-    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'your-openai-api-key')
-    VOYAGE_API_KEY = os.environ.get('VOYAGE_API_KEY', 'your-voyage-api-key')
+from dotenv import load_dotenv
+load_dotenv()
+
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', 'your-openai-api-key')
+VOYAGE_API_KEY = os.environ.get('VOYAGE_API_KEY', 'your-voyage-api-key')
+
 
 # Configuration constants
 GPT_MODEL = "gpt-4o"
-DB_NAME = "langgraph_agent_demo_test"
+DB_NAME = "langgraph_agent_demo"
 COLLECTION_NAMES = {
     "tools": "tools",
     "orders": "orders", 
