@@ -88,8 +88,8 @@ class DataManager:
                 print(f"Vector search index already exists for {collection_name}. Skipping creation.")
         
         if index_created:
-            print("Pausing for 20 seconds to allow index builds...")
-            time.sleep(20)
+            print("Pausing for 30 seconds to allow index builds...")
+            time.sleep(30)
             print("Resuming after pause.")
         else:
             print("No new indexes were created. Skipping pause.")
@@ -276,8 +276,8 @@ class CLISetupManager:
     def __init__(self):
         self.mongo_manager = mongo_manager
         self.tool_registry = tool_registry
-        # Ensure we have an initialized agent builder for CLI tests
-        self.agent_builder = get_or_create_agent_builder()
+        # Agent builder not required for setup steps; can be initialized by main app
+        self.agent_builder = None
         self.data_manager = DataManager(mongo_manager)
     
     def check_mongodb_connection(self) -> bool:
@@ -338,21 +338,6 @@ class CLISetupManager:
             print(f"❌ Error setting up dummy data: {e}")
             return False
     
-    def test_agent(self):
-        """Test the agent with a sample query."""
-        print("Testing agent...")
-        try:
-            test_query = "How much did I pay for order 101"
-            print(f"Testing query: '{test_query}'")
-            # Ensure agent builder is initialized in case script is invoked standalone
-            builder = self.agent_builder or get_or_create_agent_builder()
-            builder.create_dynamic_agent(test_query, "cli_test")
-            print("✅ Agent test completed successfully!")
-            return True
-        except Exception as e:
-            print(f"❌ Error testing agent: {e}")
-            return False
-    
     def show_collection_status(self):
         """Show the status of all collections."""
         print("Checking collection status...")
@@ -383,7 +368,6 @@ class CLISetupManager:
             ("Policy Documents", self.setup_policy_documents),
             ("Dummy Data", self.setup_dummy_data),
             ("Collection Status", self.show_collection_status),
-            ("Agent Test", self.test_agent)
         ]
         
         results = []
@@ -418,7 +402,6 @@ Examples:
   python setup_agent_database.py --full                    # Run full setup
   python setup_agent_database.py --tools --indexes         # Setup tools and indexes only
   python setup_agent_database.py --check-connection        # Check MongoDB connection only
-  python setup_agent_database.py --test                    # Test the agent only
         """
     )
     
@@ -457,11 +440,7 @@ Examples:
         action="store_true", 
         help="Show collection status"
     )
-    parser.add_argument(
-        "--test", 
-        action="store_true", 
-        help="Test the agent"
-    )
+    # Removed agent test option from setup script
     
     args = parser.parse_args()
     
@@ -507,9 +486,7 @@ Examples:
         success = setup_manager.show_collection_status()
         sys.exit(0 if success else 1)
     
-    if args.test:
-        success = setup_manager.test_agent()
-        sys.exit(0 if success else 1)
+    # Agent test removed
     
     # If no arguments provided, show help
     if not any(vars(args).values()):
