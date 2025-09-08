@@ -41,7 +41,7 @@ except ImportError:
 
 # Configuration constants
 GPT_MODEL = "gpt-4o"
-DB_NAME = "langgraph_agent_demo"
+DB_NAME = "langgraph_agent_demo_test"
 COLLECTION_NAMES = {
     "tools": "tools",
     "orders": "orders", 
@@ -745,6 +745,34 @@ def populate_local_tool_registry():
 
 # Initialize agent builder (will be re-initialized in main if needed)
 agent_builder = None
+
+# Ensure an agent builder exists and tools are loaded
+def get_or_create_agent_builder() -> LangGraphAgentBuilder:
+    """Return a ready-to-use LangGraphAgentBuilder, initializing if necessary.
+    Ensures tools exist in MongoDB and the local registry is populated.
+    """
+    global agent_builder
+    if agent_builder is not None:
+        return agent_builder
+
+    # Ensure tools exist and local registry is populated
+    tools_collection = mongo_manager.get_collection("tools")
+    try:
+        tools_count = tools_collection.count_documents({})
+    except Exception:
+        tools_count = 0
+
+    if tools_count == 0:
+        try:
+            register_all_tools()
+        except Exception:
+            # If registration fails here, still attempt to populate local registry
+            populate_local_tool_registry()
+    else:
+        populate_local_tool_registry()
+
+    agent_builder = LangGraphAgentBuilder(mongo_manager, tool_registry)
+    return agent_builder
 
 # Predefined test queries for quick selection
 TEST_QUERIES = [

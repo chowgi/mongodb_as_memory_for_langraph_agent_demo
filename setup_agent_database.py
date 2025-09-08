@@ -21,7 +21,8 @@ from langgraph_mongodb_toolbox_agent import (
     tool_registry, 
     agent_builder, 
     COLLECTION_NAMES,
-    VECTOR_INDEX_CONFIG
+    VECTOR_INDEX_CONFIG,
+    get_or_create_agent_builder,
 )
 
 class DataManager:
@@ -275,7 +276,8 @@ class CLISetupManager:
     def __init__(self):
         self.mongo_manager = mongo_manager
         self.tool_registry = tool_registry
-        self.agent_builder = agent_builder
+        # Ensure we have an initialized agent builder for CLI tests
+        self.agent_builder = get_or_create_agent_builder()
         self.data_manager = DataManager(mongo_manager)
     
     def check_mongodb_connection(self) -> bool:
@@ -342,7 +344,9 @@ class CLISetupManager:
         try:
             test_query = "How much did I pay for order 101"
             print(f"Testing query: '{test_query}'")
-            self.agent_builder.create_dynamic_agent(test_query, "cli_test")
+            # Ensure agent builder is initialized in case script is invoked standalone
+            builder = self.agent_builder or get_or_create_agent_builder()
+            builder.create_dynamic_agent(test_query, "cli_test")
             print("✅ Agent test completed successfully!")
             return True
         except Exception as e:
