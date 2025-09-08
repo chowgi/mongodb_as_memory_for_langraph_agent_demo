@@ -746,6 +746,108 @@ def populate_local_tool_registry():
 # Initialize agent builder (will be re-initialized in main if needed)
 agent_builder = None
 
+# Predefined test queries for quick selection
+TEST_QUERIES = [
+    {
+        "label": "Return laptop from order 101 after 20 days",
+        "query": "I would like to return the laptop that I recently purchased ar part of order 101. I have had it for 20 days since delivery. Please organise a return of just the laptop and tell me what my refund will be. thanks.",
+        "thread_id": "thread_1",
+    },
+    {
+        "label": "Ask return policy time limit for electronics",
+        "query": "What is the return policy for electronics? I need to know the time limit.",
+        "thread_id": "customer_conversation",
+    },
+    {
+        "label": "How long do I have to return laptop (order 101)",
+        "query": "I just purchased a laptop on order 101 today. How long do I have before I am unable to return it?",
+        "thread_id": "customer_conversation",
+    },
+    {
+        "label": "Create refund for unused laptop",
+        "query": "It is unused. I would like to send the laptop back. Can you please create refund?",
+        "thread_id": "customer_conversation",
+    },
+]
+
+def _chat_loop(thread_id: str) -> None:
+    """Interactive chat loop for a given thread. Type 'back' to return or 'quit' to exit."""
+    print("\nEnter messages to chat. Type 'back' to return to menu, or 'quit' to exit.")
+    while True:
+        try:
+            user_input = input(f"[{thread_id}] You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nExiting...")
+            raise SystemExit(0)
+
+        if not user_input:
+            continue
+        if user_input.lower() == "back":
+            return
+        if user_input.lower() in ("quit", "exit"):
+            raise SystemExit(0)
+
+        try:
+            agent_builder.create_dynamic_agent(user_input, thread_id)
+        except Exception as e:
+            print(f"Error during chat: {e}")
+
+def _print_menu() -> None:
+    print("\n" + "=" * 60)
+    print("LangGraph MongoDB Toolbox Agent - Interactive Mode")
+    print("=" * 60)
+    print("Select an option:")
+    print("  1) Type a custom query and thread ID")
+    print("  2) Choose from predefined test queries")
+    print("  q) Quit")
+
+def _interactive_cli() -> None:
+    """Interactive CLI to choose manual input, test queries, or quit."""
+    while True:
+        _print_menu()
+        try:
+            choice = input("Enter choice: ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print("\nExiting...")
+            break
+
+        if choice in ("q", "quit", "exit"):
+            print("Goodbye!")
+            break
+        elif choice == "1":
+            thread_id = input("Enter thread ID (default 'default'): ").strip() or "default"
+            initial = input("Optional initial message (press Enter to skip): ").strip()
+            if initial:
+                try:
+                    agent_builder.create_dynamic_agent(initial, thread_id)
+                except Exception as e:
+                    print(f"Error running initial message: {e}")
+            _chat_loop(thread_id)
+        elif choice == "2":
+            print("\nPredefined test queries:")
+            for idx, tq in enumerate(TEST_QUERIES, start=1):
+                print(f"  {idx}) {tq['label']}  [thread: {tq['thread_id']}]")
+            print("  b) Back")
+            sel = input("Choose a test case: ").strip().lower()
+            if sel in ("b", "back"):
+                continue
+            if sel.isdigit():
+                idx = int(sel) - 1
+                if 0 <= idx < len(TEST_QUERIES):
+                    test = TEST_QUERIES[idx]
+                    print(f"\nRunning: {test['label']}")
+                    try:
+                        agent_builder.create_dynamic_agent(test["query"], test["thread_id"])
+                    except Exception as e:
+                        print(f"Error running test query: {e}")
+                    _chat_loop(test["thread_id"])
+                else:
+                    print("Invalid selection.")
+            else:
+                print("Invalid selection.")
+        else:
+            print("Unknown choice. Please select 1, 2, or q.")
+
 def main():
     """Main function to demonstrate the LangGraph MongoDB toolbox agent."""
     
@@ -764,30 +866,11 @@ def main():
     global agent_builder
     agent_builder = LangGraphAgentBuilder(mongo_manager, tool_registry)
     
-    print("Running example queries to demonstrate the agent...")
-    print("="*60)
-    
-    # Example usage - demonstrating conversation persistence and vector search
-    print("🧪 Testing conversation persistence and vector search capabilities...")
-    test_queries = [
-        ("I would like to return the laptop that I recently purchased ar part of order 101. I have had it for 20 days since delivery. Please organise a return of just the laptop and tell me what my refund will be. thanks.", "thread_1"),
-        # ("What is the return policy for electronics? I need to know the time limit.", "customer_conversation"),
-        # ("I just purchased a laptop on order 101 today. How long do I have before I am unable to return it?", "customer_conversation"),
-        # ("It is unused. I would like to send the laptop back. Can you please create refund?", "customer_conversation"),
-    ]
-    
-    for i, (query, thread_id) in enumerate(test_queries, 1):
-        print(f"\n{i}. Testing: {query}")
-        print("-" * 40)
-        try:
-            agent_builder.create_dynamic_agent(query, thread_id)
-        except Exception as e:
-            print(f"Error running query: {e}")
-        print("-" * 40)
-    
-    print("\n" + "="*60)
-    print("Demo complete! Use the setup script to initialize the system:")
-    print("  python setup_agent_database.py --help")
+    # Launch interactive CLI
+    try:
+        _interactive_cli()
+    except SystemExit:
+        pass
 
 if __name__ == "__main__":
     main()
