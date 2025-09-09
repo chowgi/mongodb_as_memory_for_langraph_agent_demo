@@ -1,6 +1,27 @@
 # LangGraph MongoDB Toolbox Agent
 
+
+# MongoDB + LangGraph Agent Demo
 This project demonstrates a LangGraph-based agent that discovers and uses tools stored in MongoDB. It includes a full setup script and an interactive CLI for chatting with the agent, selecting predefined test queries, and persisting conversations by thread.
+
+**Key Components:**
+
+**MongoDB Integration:** Stores tool definitions and conversation checkpoints, vector embeddings and operational data.
+**VoyageAI Embeddings:** Used for vectorizing tool descriptions to enable semantic search for tool selection.
+**LangGraph:** Provides the framework for building the agent's state machine and managing conversation flow.
+**Dynamic Tool Selection:** The agent uses vector search to identify and utilize the most relevant tools for a given user query.
+**Conversation Persistence: **Conversation history is stored in MongoDB using LangGraph's MongoDBSaver checkpointer.
+
+**Workflow:**
+
+* **Initialization:** Connects to MongoDB and initializes the MongoDBManager and ToolRegistry.
+* **Tool Registration:** Registers available tools (functions) with the ToolRegistry, storing their definitions and embeddings in MongoDB.
+* **Agent Creation:** When a user query is received, the LangGraphAgentBuilder performs a vector search on the tool descriptions in MongoDB to find the most relevant tools.
+* **Graph Execution:** A LangGraph is dynamically constructed with the selected tools and the LLM. The user's query is processed through the graph.
+* **Tool Calling:** If the LLM determines a tool is needed, the graph routes the execution to the tool node, which invokes the appropriate tool function.
+* **Response Generation:** The agent incorporates the tool's output into its response to the user.
+* **Conversation Persistence:**The entire conversation state is saved in MongoDB, allowing for continuation of the conversation.
+
 
 ## Prerequisites
 
@@ -27,7 +48,7 @@ pip install -e .
 
 ### 1) Run Full Setup
 
-Creates tools, vector indexes, ingests policy documents, inserts dummy orders, and runs a smoke test.
+Creates tools, vector indexes, ingests policy documents, and inserts dummy orders.
 
 ```bash
 python setup_agent_database.py --full
@@ -40,7 +61,6 @@ python setup_agent_database.py --tools --indexes
 python setup_agent_database.py --policies
 python setup_agent_database.py --dummy-data
 python setup_agent_database.py --status
-python setup_agent_database.py --test
 ```
 
 ### 2) Start the Interactive Agent CLI
@@ -65,7 +85,7 @@ Conversations are persisted by thread ID using MongoDB-backed checkpoints.
 ## Project Structure
 
 - `langgraph_mongodb_toolbox_agent.py` — Agent implementation, interactive CLI, tool registry integration, and LangGraph execution.
-- `setup_agent_database.py` — One-shot CLI to set up tools, vector indexes, policy documents, and dummy orders; also provides a basic agent test.
+- `setup_agent_database.py` — One-shot CLI to set up tools, vector indexes, policy documents, and dummy orders.
 - `reset_demo.py` — Optional helper to reset demo data (if present).
 
 ## Notes on Vector Search and Embeddings
@@ -79,7 +99,7 @@ Conversations are persisted by thread ID using MongoDB-backed checkpoints.
 - Connection issues: verify `MONGODB_URI` and network access.
 - Missing variables: ensure `MONGODB_URI` and `OPENAI_API_KEY` are exported.
 - Index creation delays: the setup script waits ~30 seconds after creating indexes.
-- Agent test failing with uninitialized builder: the setup script now initializes the agent via `get_or_create_agent_builder()`.
+- Agent initialization: the main agent script initializes the agent builder automatically when needed.
 
 ## License
 
