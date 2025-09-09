@@ -1,27 +1,30 @@
-# LangGraph MongoDB Toolbox Agent
-
-
 # MongoDB + LangGraph Agent Demo
-This project demonstrates a LangGraph-based agent that discovers and uses tools stored in MongoDB. It includes a full setup script and an interactive CLI for chatting with the agent, selecting predefined test queries, and persisting conversations by thread.
+
+This project demonstrates how to use MongoDB as a comprehensive memory provider for LangGraph agents, enabling persistent conversations, semantic tool discovery, and intelligent document retrieval. The agent showcases MongoDB's role as both conversation memory and knowledge base.
+
+## What This Demo Shows
+
+**🧠 MongoDB as Memory Provider:** LangGraph's MongoDBSaver checkpointer stores conversation state, enabling seamless continuation of multi-turn dialogues across sessions with full context preservation.
+
+**🔍 Semantic Memory Retrieval:** Vector search across conversation history and policy documents allows the agent to maintain context and retrieve relevant information from previous interactions.
+
+**🛠️ Dynamic Tool Discovery:** Tools are stored in MongoDB with embeddings, enabling semantic matching between user queries and available capabilities without hardcoded routing.
+
+**📚 Context-Aware Document Intelligence:** Policy documents are processed with contextualized embeddings, enabling sophisticated retrieval-augmented generation for customer service scenarios.
+
+**💾 Unified Data Architecture:** MongoDB serves as the single source of truth for conversations, tools, documents, and operational data, demonstrating enterprise-ready memory management.
 
 **Key Components:**
 
-**MongoDB Integration:** Stores tool definitions and conversation checkpoints, vector embeddings and operational data.
-**VoyageAI Embeddings:** Used for vectorizing tool descriptions to enable semantic search for tool selection.
-**LangGraph:** Provides the framework for building the agent's state machine and managing conversation flow.
-**Dynamic Tool Selection:** The agent uses vector search to identify and utilize the most relevant tools for a given user query.
-**Conversation Persistence: **Conversation history is stored in MongoDB using LangGraph's MongoDBSaver checkpointer.
+**MongoDB as Memory Provider:** Serves as the unified storage layer for conversation checkpoints, tool definitions, document embeddings, and operational data using LangGraph's MongoDBSaver.
 
-**Workflow:**
+**VoyageAI Context-Aware Embeddings:** Uses voyage-context-3 model for contextualized embeddings of both tools and documents, enabling sophisticated semantic search and retrieval-augmented generation.
 
-* **Initialization:** Connects to MongoDB and initializes the MongoDBManager and ToolRegistry.
-* **Tool Registration:** Registers available tools (functions) with the ToolRegistry, storing their definitions and embeddings in MongoDB.
-* **Agent Creation:** When a user query is received, the LangGraphAgentBuilder performs a vector search on the tool descriptions in MongoDB to find the most relevant tools.
-* **Graph Execution:** A LangGraph is dynamically constructed with the selected tools and the LLM. The user's query is processed through the graph.
-* **Tool Calling:** If the LLM determines a tool is needed, the graph routes the execution to the tool node, which invokes the appropriate tool function.
-* **Response Generation:** The agent incorporates the tool's output into its response to the user.
-* **Conversation Persistence:**The entire conversation state is saved in MongoDB, allowing for continuation of the conversation.
+**LangGraph State Management:** Provides the framework for building conversational state machines with persistent memory, enabling complex multi-turn interactions.
 
+**Vector Search Architecture:** MongoDB Atlas vector search indexes enable semantic retrieval across conversations, tools, and documents for context-aware responses.
+
+**Dynamic Memory Integration:** Conversation context is automatically incorporated into tool selection and document retrieval, creating a cohesive memory-aware experience.
 
 ## Prerequisites
 
